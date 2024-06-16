@@ -20,6 +20,6 @@ public class Category extends BaseEntity{
             cascade = CascadeType.PERSIST,
             fetch = FetchType.EAGER
     )
-    private List<Task> task;
+    private List<Task> tasks;
 
 }

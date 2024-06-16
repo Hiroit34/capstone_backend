@@ -21,6 +21,6 @@ public class Role extends BaseEntity{
             joinColumns = @JoinColumn(name = "role_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private List<User> user;
+    private List<User> users;
 
 }

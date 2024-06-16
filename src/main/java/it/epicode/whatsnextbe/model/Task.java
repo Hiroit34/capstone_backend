@@ -26,10 +26,10 @@ public class Task extends BaseEntity{
     private Category category;
 
     @ManyToMany(
-            mappedBy = "task",
+            mappedBy = "tasks",
             cascade = {CascadeType.PERSIST, CascadeType.MERGE}
     )
-    private List<User> user;
+    private List<User> users;
 
 
 }

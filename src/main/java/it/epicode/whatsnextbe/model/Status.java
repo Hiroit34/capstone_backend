@@ -19,6 +19,6 @@ public class Status extends BaseEntity{
             mappedBy = "status",
             fetch = FetchType.EAGER
     )
-    private List<Task> task;
+    private List<Task> tasks;
 
 }

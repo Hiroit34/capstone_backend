@@ -33,6 +33,6 @@ public class User extends BaseEntity {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "task_id")
     )
-    private List<Task> task;
+    private List<Task> tasks;
 
 }
