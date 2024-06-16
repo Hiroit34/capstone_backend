@@ -16,7 +16,7 @@ public class Status extends BaseEntity{
 
     @OneToMany(
             cascade = CascadeType.PERSIST,
-            mappedBy = "category",
+            mappedBy = "status",
             fetch = FetchType.EAGER
     )
     private List<Task> task;

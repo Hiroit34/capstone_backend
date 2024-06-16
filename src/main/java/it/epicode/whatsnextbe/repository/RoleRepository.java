@@ -1,4 +1,7 @@
 package it.epicode.whatsnextbe.repository;
 
-public interface RoleRepository {
+import it.epicode.whatsnextbe.model.Role;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface RoleRepository extends JpaRepository<Role, Long> {
 }
