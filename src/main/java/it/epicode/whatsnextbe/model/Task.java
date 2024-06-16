@@ -9,7 +9,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
-@Table(name = "task")
+@Table(name = "tasks")
 public class Task extends BaseEntity{
 
     @Column(unique=true, length = 50)
@@ -26,7 +26,7 @@ public class Task extends BaseEntity{
     private Category category;
 
     @ManyToMany(
-            mappedBy = "task",
+            mappedBy = "tasks",
             cascade = {CascadeType.PERSIST, CascadeType.MERGE}
     )
     private List<User> user;

@@ -9,6 +9,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
+@Table(name = "roles")
 public class Role extends BaseEntity{
 
     @Column(length = 30, nullable = false)

@@ -9,14 +9,14 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
-@Table(name = "category")
+@Table(name = "categories")
 public class Category extends BaseEntity{
 
     @Column(unique=true, nullable=false, length=50)
     private String categoryType;
 
     @OneToMany (
-            mappedBy = "category",
+            mappedBy = "categories",
             cascade = CascadeType.PERSIST,
             fetch = FetchType.EAGER
     )
