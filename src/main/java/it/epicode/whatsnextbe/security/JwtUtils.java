@@ -18,12 +18,12 @@ public class JwtUtils {
     private String securityKey;
     @Value("${jwt.expirationMs}")
     private long expirationMs;
-    private static final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    // private static final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
 
     public String generateToken(Authentication auth) {
         byte[] keyBytes = securityKey.getBytes();
-//        Key key = Keys.hmacShaKeyFor(keyBytes);
+        Key SECRET_KEY = Keys.hmacShaKeyFor(keyBytes);
 
         var user = (SecurityUserDetails) auth.getPrincipal();
         return Jwts.builder()
@@ -39,11 +39,11 @@ public class JwtUtils {
     public boolean isTokenValid(String token) {
         try {
             byte[] keyBytes = securityKey.getBytes();
-            SecretKey key = Keys.hmacShaKeyFor(keyBytes);
+            SecretKey SECRET_KEY = Keys.hmacShaKeyFor(keyBytes);
 
             //PRENDIAMO LA DATA DI SCADENZA DAL TOKEN
             Date expirationDate = Jwts.parser()
-                    .verifyWith(key).build()
+                    .verifyWith(SECRET_KEY).build()
                     .parseSignedClaims(token).getPayload().getExpiration();
 
             //token valido fino a 2024-04-01
@@ -55,7 +55,7 @@ public class JwtUtils {
             if (expirationDate.before(new Date()))
                 throw new JwtException("Token expired");
             Jwts.parser()
-                    .verifyWith(key).requireIssuer("MySpringApplication");
+                    .verifyWith(SECRET_KEY).requireIssuer("MySpringApplication");
             return true;
         } catch (Exception e) {
             return false;
@@ -64,9 +64,9 @@ public class JwtUtils {
 
     public String getUsernameFromToken(String token) {
         byte[] keyBytes = securityKey.getBytes();
-        SecretKey key = Keys.hmacShaKeyFor(keyBytes);
+        SecretKey SECRET_KEY = Keys.hmacShaKeyFor(keyBytes);
         return Jwts.parser()
-                .verifyWith(key).build()
+                .verifyWith(SECRET_KEY).build()
                 .parseSignedClaims(token).getPayload().getSubject();
     }
 }

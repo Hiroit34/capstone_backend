@@ -1,5 +1,6 @@
 package it.epicode.whatsnextbe.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -20,6 +21,7 @@ public class Category extends BaseEntity{
             cascade = CascadeType.PERSIST,
             fetch = FetchType.EAGER
     )
+    @JsonIgnore
     private List<Task> tasks;
 
 }

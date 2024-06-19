@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
+@AllArgsConstructor
 public class CategoryRequest {
 
     @NotEmpty(message = "La tipo di categoria non puo essere vuoto")

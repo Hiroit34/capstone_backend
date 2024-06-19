@@ -37,10 +37,10 @@ public class StatusController {
     }
 
     // POST
-    @PostMapping
-    public ResponseEntity<StatusResponse> createCategory(@RequestBody StatusRequest request) {
-        return ResponseEntity.ok(statusService.createStatus(request));
-    }
+//    @PostMapping
+//    public ResponseEntity<StatusResponse> createCategory(@RequestBody StatusRequest request) {
+//        return ResponseEntity.ok(statusService.createStatus(request));
+//    }
 
     // PUT
     @PutMapping("/{id}")

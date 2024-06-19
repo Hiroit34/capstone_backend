@@ -34,14 +34,14 @@ public class StatusService {
     }
 
     //POST
-    public StatusResponse createStatus(StatusRequest request) {
-        Status entity = new Status();
-        StatusResponse response = new StatusResponse();
-        BeanUtils.copyProperties(request, entity);
-        BeanUtils.copyProperties(entity, response);
-        statusRepository.save(entity);
-        return response;
-    }
+//    public StatusResponse createStatus(StatusRequest request) {
+//        Status entity = new Status();
+//        StatusResponse response = new StatusResponse();
+//        BeanUtils.copyProperties(request, entity);
+//        BeanUtils.copyProperties(entity, response);
+//        statusRepository.save(entity);
+//        return response;
+//    }
 
     //PUT
     public StatusResponse modifyStatus(Long id, StatusRequest request) {

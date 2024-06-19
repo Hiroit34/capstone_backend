@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -16,20 +17,20 @@ import java.util.List;
 public class TaskRequest {
 
 
-    @NotEmpty(message = "Il titolo e' obbligatorio")
+    @NotEmpty(message = "Il titolo è obbligatorio")
     @Size(max = 50, message = "Il titolo deve avere un massimo di 50 caratteri")
     private String title;
 
-    @Size(max = 50, message = "la descrizione deve avere un massimo di 50 caratteri")
+    @Size(max = 50, message = "La descrizione deve avere un massimo di 50 caratteri")
     private String description;
 
-    @NotNull(message = "Lo status e' obbligatorio")
+    @NotNull(message = "Lo status è obbligatorio")
     private Status status;
 
-    @NotNull(message = "La categoria e' obbligatoria")
+    @NotNull(message = "La categoria è obbligatoria")
     private Category category;
 
     @NotEmpty(message = "Devi assegnare la task ad almeno uno user")
-    private List<User> users;
+    private List<Long> userIds;
 
 }

@@ -3,6 +3,7 @@ package it.epicode.whatsnextbe.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +35,9 @@ public class User extends BaseEntity {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    private List<Role> roles = new ArrayList<>();
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<Role> roles;
 
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
@@ -42,11 +45,17 @@ public class User extends BaseEntity {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "task_id")
     )
-    private List<Task> tasks = new ArrayList<>();
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<Task> tasks;
 
     public User() {
         this.roles = new ArrayList<>();
         this.tasks = new ArrayList<>();
+    }
+
+    public boolean isAdmin() {
+        return roles.stream().anyMatch(role -> Role.ROLES_ADMIN.equals(role.getTypeRole()));
     }
 }
 

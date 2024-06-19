@@ -58,10 +58,10 @@ public class UserService {
 
     // POST - USER
     public RegisterResponse registerUser(RegisterRequest request) {
-        if(userRepository.existsByUsername(request.getUsername())) {
+        if (userRepository.existsByUsername(request.getUsername())) {
             throw new EntityExistsException("User with username " + request.getUsername() + " already exists");
         }
-        if(userRepository.existsByEmail(request.getEmail())) {
+        if (userRepository.existsByEmail(request.getEmail())) {
             throw new EntityExistsException("User with email " + request.getEmail() + " already exists");
         }
         Role role = roleRepository.findById(Role.ROLES_USER).orElseThrow(() -> new EntityNotFoundException("Role not found"));
@@ -89,11 +89,11 @@ public class UserService {
     }
 
     //POST - ADMIN
-    public RegisterResponse registerAdmin(RegisterRequest request){
-        if(userRepository.existsByUsername(request.getUsername())){
+    public RegisterResponse registerAdmin(RegisterRequest request) {
+        if (userRepository.existsByUsername(request.getUsername())) {
             throw new EntityExistsException("Utente gia' esistente");
         }
-        if(userRepository.existsByEmail(request.getEmail())){
+        if (userRepository.existsByEmail(request.getEmail())) {
             throw new EntityExistsException("Email gia' registrata");
         }
         Role role = roleRepository.findById(Role.ROLES_ADMIN).orElseThrow(() -> new EntityNotFoundException("Role not found"));
@@ -113,16 +113,20 @@ public class UserService {
 
     public Optional<LoginResponse> login(String username, String password) {
         try {
-            //SI EFFETTUA IL LOGIN
-            //SI CREA UNA AUTENTICAZIONE OVVERO L'OGGETTO DI TIPO AUTHENTICATION
-            var a = auth.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+            // Recupera l'utente dal repository
+            var user = userRepository.findOneByUsername(username)
+                    .orElseThrow(() -> new InvalidLoginException(username, password, InvalidLoginException.ErrorType.USERNAME, "Invalid username"));
 
-            a.getAuthorities(); //SERVE A RECUPERARE I RUOLI/IL RUOLO
+            // Autentica l'utente con le credenziali fornite
+            var authentication = auth.authenticate(new UsernamePasswordAuthenticationToken(username, password));
 
-            //SI CREA UN CONTESTO DI SICUREZZA CHE SARA UTILIZZATO IN PIU OCCASIONI
-            SecurityContextHolder.getContext().setAuthentication(a);
+            // Recupera i ruoli dell'utente
+            authentication.getAuthorities();
 
-            var user = userRepository.findOneByUsername(username).orElseThrow();
+            // Imposta il contesto di sicurezza
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            // Crea la risposta di login
             var dto = LoginResponse.builder()
                     .withUser(RegisterResponse.builder()
                             .withId(user.getId())
@@ -134,18 +138,51 @@ public class UserService {
                             .build())
                     .build();
 
-            //UTILIZZO DI JWTUTILS PER GENERARE IL TOKEN UTILIZZANDO UNA AUTHENTICATION E LO ASSEGNA ALLA LOGINRESPONSEDTO
-            dto.setToken(jwt.generateToken(a));
+            // Genera e assegna il token JWT alla risposta di login
+            dto.setToken(jwt.generateToken(authentication));
 
             return Optional.of(dto);
         } catch (NoSuchElementException e) {
-            //ECCEZIONE LANCIATA SE LO USERNAME E SBAGLIATO E QUINDI L'UTENTE NON VIENE TROVATO
+            // Eccezione lanciata se il nome utente è errato
             log.error("User not found", e);
-            throw new InvalidLoginException(username, password);
+            throw new InvalidLoginException(username, password, InvalidLoginException.ErrorType.USERNAME, "Invalid username");
         } catch (AuthenticationException e) {
-            //ECCEZIONE LANCIATA SE LA PASSWORD E SBAGLIATA
+            // Eccezione lanciata se la password è errata
             log.error("Authentication failed", e);
-            throw new InvalidLoginException(username, password);
+            throw new InvalidLoginException(username, password, InvalidLoginException.ErrorType.PASSWORD, "Invalid password");
         }
     }
+
+    public Optional<User> getUserByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
+    public boolean isAdmin(Long userId) {
+        Optional<User> user = userRepository.findById(userId);
+        return user.map(u -> u.getRoles().stream()
+                .anyMatch(role -> role.getTypeRole().equals(Role.ROLES_ADMIN))).orElse(false);
+    }
+
+    public UserResponse updateUser(Long id, RegisterRequest updateRequest) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+
+        // Copia le proprietà dal request all'utente, escludendo l'id e i ruoli
+        BeanUtils.copyProperties(updateRequest, user, "id", "roles");
+
+        // Cripta la password solo se è presente nel request
+        if (updateRequest.getPassword() != null && !updateRequest.getPassword().isEmpty()) {
+            user.setPassword(encoder.encode(updateRequest.getPassword()));
+        }
+
+        // Salva l'utente aggiornato nel repository
+        userRepository.save(user);
+
+        // Crea la risposta e copia le proprietà dall'utente aggiornato
+        UserResponse response = new UserResponse();
+        BeanUtils.copyProperties(user, response);
+
+        return response;
+    }
+
 }
