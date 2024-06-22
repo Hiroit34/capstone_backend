@@ -2,18 +2,22 @@ package it.epicode.whatsnextbe.runner;
 
 import it.epicode.whatsnextbe.model.Role;
 import it.epicode.whatsnextbe.service.RoleService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 @Component
+@Order(5)
 public class RoleRunner implements ApplicationRunner {
 
     @Autowired
     private RoleService service;
 
     @Override
+    @Transactional
     public void run(ApplicationArguments args) throws Exception {
 
         // Verifica se i ruoli esistono già nel database

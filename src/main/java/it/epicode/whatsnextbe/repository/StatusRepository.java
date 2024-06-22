@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface StatusRepository extends JpaRepository<Status, Long> {
     Optional<Status> findByStatus(Status.StatusType status);
+    boolean existsByStatus(Status.StatusType status);
 }

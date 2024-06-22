@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import java.util.List;
 
@@ -11,6 +12,7 @@ import java.util.List;
 @Entity
 @Data
 @Table(name = "category")
+@ToString(exclude = "tasks")
 public class Category extends BaseEntity{
 
     @Column(unique=true, nullable=false, length=50)

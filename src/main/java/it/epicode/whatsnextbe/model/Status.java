@@ -2,10 +2,7 @@ package it.epicode.whatsnextbe.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
@@ -15,6 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "status")
+@ToString(exclude = "tasks")
 public class Status extends BaseEntity{
 
     @Enumerated(EnumType.STRING)

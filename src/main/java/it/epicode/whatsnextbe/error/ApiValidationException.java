@@ -1,4 +1,4 @@
-package it.epicode.whatsnextbe.security;
+package it.epicode.whatsnextbe.error;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.ObjectError;
