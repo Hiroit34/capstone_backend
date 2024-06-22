@@ -19,6 +19,7 @@ public class SecurityUserDetails implements UserDetails {
     private static final long serialVersionUID = 1L;
 
     private Collection<? extends GrantedAuthority> authorities;
+    private Long id;
     private String password;
     private String username;
     @Builder.Default
@@ -34,6 +35,7 @@ public class SecurityUserDetails implements UserDetails {
         var authorities = user.getRoles().stream()
                 .map(r -> new SimpleGrantedAuthority(r.getTypeRole())).toList();
         return SecurityUserDetails.builder()
+                .withId(user.getId())
                 .withUsername(user.getUsername())
                 .withPassword(user.getPassword())
                 .withAuthorities(authorities)

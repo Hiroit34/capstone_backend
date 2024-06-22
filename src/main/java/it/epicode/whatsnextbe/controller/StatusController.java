@@ -1,6 +1,6 @@
 package it.epicode.whatsnextbe.controller;
 
-import it.epicode.whatsnextbe.dto.request.status.StatusRequest;
+import it.epicode.whatsnextbe.dto.request.status.StatusTaskRequest;
 import it.epicode.whatsnextbe.dto.response.status.StatusResponse;
 import it.epicode.whatsnextbe.model.Status;
 import it.epicode.whatsnextbe.service.StatusService;
@@ -44,7 +44,7 @@ public class StatusController {
 
     // PUT
     @PutMapping("/{id}")
-    public ResponseEntity<StatusResponse> modifyStatus(@PathVariable Long id, @RequestBody StatusRequest request) {
+    public ResponseEntity<StatusResponse> modifyStatus(@PathVariable Long id, @RequestBody StatusTaskRequest request) {
         return ResponseEntity.ok(statusService.modifyStatus(id, request));
     }
 

@@ -1,7 +1,12 @@
 package it.epicode.whatsnextbe.service;
 
+import it.epicode.whatsnextbe.dto.request.status.StatusTaskRequest;
 import it.epicode.whatsnextbe.dto.request.task.TaskRequest;
+import it.epicode.whatsnextbe.dto.request.task.TaskRequestUpdate;
 import it.epicode.whatsnextbe.dto.response.task.TaskResponse;
+import it.epicode.whatsnextbe.dto.response.task.TaskResponseLight;
+import it.epicode.whatsnextbe.error.ResourceNotFoundException;
+import it.epicode.whatsnextbe.mapper.UserMapper;
 import it.epicode.whatsnextbe.model.Category;
 import it.epicode.whatsnextbe.model.Status;
 import it.epicode.whatsnextbe.model.Task;
@@ -11,40 +16,67 @@ import it.epicode.whatsnextbe.repository.StatusRepository;
 import it.epicode.whatsnextbe.repository.TaskRepository;
 import it.epicode.whatsnextbe.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class TaskService {
-    //GET, GET BY ID, POST, PUT, DELETE
 
-    @Autowired
-    private TaskRepository taskRepository;
+    private final TaskRepository taskRepository;
+    private final UserRepository userRepository;
+    private final CategoryRepository categoryRepository;
+    private final StatusRepository statusRepository;
+    private final AuthenticationSerivce authenticationService;
+    private final UserService userService;
 
-    @Autowired
-    private UserRepository userRepository;
+    @Transactional
+    public List<TaskResponseLight> getAllTasks() {
 
-    @Autowired
-    private CategoryRepository categoryRepository;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-    @Autowired
-    private StatusRepository statusRepository;
+        if (authentication == null) {
+            System.out.println("Authentication object is null");;
+        }
 
-    @Autowired
-    private AuthenticationSerivce authenticationService;
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ADMIN"));
 
-    // GET ALL
-    public List<Task> getAllTasks() {
-        return taskRepository.findAll();
+        List<Task> tasks;
+        if (isAdmin) {
+            tasks = taskRepository.findAll();
+
+        } else {
+            Long userId = authenticationService.getCurrentUserId();
+            Optional<User> user = userRepository.findById(userId);
+
+            tasks = taskRepository.findAllByUsersIdOrShared(user);
+        }
+
+        return tasks.stream().map(task -> {
+            TaskResponseLight dto = new TaskResponseLight();
+            dto.setId(task.getId());
+            dto.setName(task.getTitle());
+            dto.setDescription(task.getDescription());
+            dto.setStatus(task.getStatus().getStatus().toString());
+            dto.setUsers(task.getUsers().stream().map(UserMapper::convertToUserResponseLight).collect(Collectors.toList()));
+            System.out.println(task.getUsers());
+            return dto;
+        }).collect(Collectors.toList());
+
     }
 
-    // GET BY ID
     public TaskResponse getTaskById(Long id) {
         Optional<Task> task = taskRepository.findById(id);
         if (task.isPresent()) {
@@ -57,28 +89,39 @@ public class TaskService {
         }
     }
 
-    // DELETE TASK
-    public String deleteTask(Long id) {
-        if (taskRepository.existsById(id)) {
-            taskRepository.deleteById(id);
-            return "Task deleted successfully.";
+    @Transactional
+    public String deleteTask(Long taskId) {
+        User currentUser = userService.getCurrentUser();
+        Optional<Task> optionalTask = taskRepository.findById(taskId);
+        System.out.println(taskRepository.findById(taskId).get());
+        if (optionalTask.isPresent()) {
+            Task task = optionalTask.get();
+            boolean isAdmin = currentUser.getRoles().stream().anyMatch(role -> role.getTypeRole().equals("ADMIN"));
+
+            if (isAdmin || (task.getUsers().size() == 1 && task.getUsers().contains(currentUser))) {
+                for (User user : task.getUsers()) {
+                    user.getTasks().remove(task);
+                    userRepository.save(user);
+                }
+                task.setUsers(new ArrayList<>());
+                taskRepository.save(task);
+                taskRepository.deleteById(taskId);
+                Task test = taskRepository.findAll().getFirst();
+                System.out.println(test.getId());
+                System.out.println("Task deleted successfully " + task.getId());
+                return "Task deleted successfully";
+            } else {
+                return "You do not have permission to delete this task. Ask to an ADMIN";
+            }
+        } else {
+            return "Task not found";
         }
-        return "Task not found with id: " + id;
     }
 
-    // CREATE A NEW TASK
-//    public TaskCompleteResponse createTask(TaskRequest request) {
-//        Task entityTask = new Task();
-//        BeanUtils.copyProperties(request, entityTask);
-//        setDefaultStatus(entityTask);
-//
-//        return getTaskCompleteResponse(request, entityTask);
-//    }
     public TaskResponse createTask(TaskRequest request, Principal principal) {
         Task entityTask = new Task();
         BeanUtils.copyProperties(request, entityTask);
 
-        // Set default status if not provided
         if (request.getStatus() == null) {
             Optional<Status> defaultStatus = statusRepository.findByStatus(Status.StatusType.NON_COMPLETATO);
             if (defaultStatus.isPresent()) {
@@ -92,63 +135,115 @@ public class TaskService {
             entityTask.setStatus(request.getStatus());
         }
 
-        // Retrieve current user
         User currentUser = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("User not found with username: " + principal.getName()));
 
-        // Check if the user is an admin
-        List<User> users;
+        List<User> users = new ArrayList<>();
+        System.out.println(request.getUserIds());
         if (authenticationService.isAdmin(currentUser.getId())) {
-            // Admin can assign the task to any users
-            users = request.getUserIds().stream()
-                    .map(userId -> userRepository.findById(userId)
-                            .orElseThrow(() -> new RuntimeException("User not found with id: " + userId)))
-                    .collect(Collectors.toList());
+            for (Long userId: request.getUserIds()) {
+                System.out.println(request.getUserIds());
+                User userFound = userRepository.findById(userId).get();
+                System.out.println(userFound);
+                userFound.getTasks().add(entityTask);
+                entityTask.getUsers().add(userFound);
+            }
         } else {
-            // Regular user can only assign the task to themselves
             users = List.of(currentUser);
+            currentUser.getTasks().add(entityTask);
+            entityTask.getUsers().add(currentUser);
         }
         entityTask.setUsers(users);
+        System.out.println(users);
 
-        // Set category
         Category entityCategory = categoryRepository.findById(request.getCategory().getId())
                 .orElseThrow(() -> new RuntimeException("Category not found with id: " + request.getCategory().getId()));
         entityTask.setCategory(entityCategory);
 
-        // Save the task
         Task savedTask = taskRepository.save(entityTask);
+        System.out.println(savedTask);
 
-        // Create response
         TaskResponse response = new TaskResponse();
         BeanUtils.copyProperties(savedTask, response);
         return response;
     }
 
+//    public TaskResponse updateTask(Long id, TaskRequestUpdate request) {
+//        Optional<Task> task = taskRepository.findById(id);
+//        if (task.isPresent()) {
+//            Task entityTask = task.get();
+//            BeanUtils.copyProperties(request, entityTask, "id");
+//
+//            if (request.getStatus() != null) {
+//                Optional<Status> statusOpt = statusRepository.findByStatus(request.getStatus().getStatus());
+//                statusOpt.ifPresent(entityTask::setStatus);
+//            }
+//            return getTaskCompleteResponse(request, entityTask);
+//        }
+//        throw new RuntimeException("Task not found with id: " + id);
+//    }
 
+    public TaskResponse updateTask(Long id, TaskRequestUpdate request) {
+        User currentUser = userService.getCurrentUser(); // Supponendo che tu abbia un metodo per ottenere l'utente corrente
+        Optional<Task> taskOpt = taskRepository.findById(id);
 
-    // UPDATE TASK
-    public TaskResponse updateTask(Long id, TaskRequest request) {
-        Optional<Task> task = taskRepository.findById(id);
-        if (task.isPresent()) {
-            Task entityTask = task.get();
-            BeanUtils.copyProperties(request, entityTask, "id");
+        if (taskOpt.isPresent()) {
+            Task task = taskOpt.get();
 
-            if (request.getStatus() != null) {
-                Optional<Status> statusOpt = statusRepository.findByStatus(request.getStatus().getStatus());
-                statusOpt.ifPresent(entityTask::setStatus);
+            boolean isAdmin = currentUser.getRoles().stream()
+                    .anyMatch(role -> role.getTypeRole().equals("ADMIN"));
+
+            boolean isTaskAssignedToCurrentUser = task.getUsers().size() == 1 && task.getUsers().contains(currentUser);
+
+            if (isAdmin || isTaskAssignedToCurrentUser) {
+                BeanUtils.copyProperties(request, task, "id");
+
+                if (request.getStatus() != null) {
+                    Optional<Status> statusOpt = statusRepository.findByStatus(request.getStatus().getStatus());
+                    statusOpt.ifPresent(task::setStatus);
+                }
+                taskRepository.save(task);
+                return getTaskCompleteResponse(request, task);
+            } else {
+                throw new AccessDeniedException("You do not have permission to update this task.");
             }
-
-            return getTaskCompleteResponse(request, entityTask);
+        } else {
+            throw new RuntimeException("Task not found with id: " + id);
         }
-        throw new RuntimeException("Task not found with id: " + id);
     }
 
-    private TaskResponse getTaskCompleteResponse(TaskRequest request, Task entityTask) {
-        List<User> users = request.getUserIds().stream()
-                .map(userId -> userRepository.findById(userId)
-                        .orElseThrow(() -> new RuntimeException("User not found with id: " + userId)))
-                .collect(Collectors.toList());
-        entityTask.setUsers(users);
+    @Transactional
+    public TaskResponse updateTaskStatus(Long id, StatusTaskRequest request) {
+        User currentUser = userService.getCurrentUser(); // Supponendo che tu abbia un metodo per ottenere l'utente corrente
+        Optional<Task> taskOpt = taskRepository.findById(id);
+
+        if (taskOpt.isPresent()) {
+            Task task = taskOpt.get();
+
+            boolean isAdmin = currentUser.getRoles().stream()
+                    .anyMatch(role -> role.getTypeRole().equals("ADMIN"));
+
+            boolean isTaskAssignedToCurrentUser = task.getUsers().contains(currentUser);
+
+            if (isAdmin || isTaskAssignedToCurrentUser) {
+                Optional<Status> statusOpt = statusRepository.findByStatus(Status.StatusType.valueOf(request.getStatus()));
+                if (statusOpt.isPresent()) {
+                    System.out.println(statusOpt);
+                    task.setStatus(statusOpt.get());
+                    taskRepository.save(task);
+                    return new TaskResponse(task.getStatus());
+                } else {
+                    throw new ResourceNotFoundException("Status not found: " + request.getStatus());
+                }
+            } else {
+                throw new AccessDeniedException("You do not have permission to update this task.");
+            }
+        } else {
+            throw new ResourceNotFoundException("Task not found with id: " + id);
+        }
+    }
+
+    private TaskResponse getTaskCompleteResponse(TaskRequestUpdate request, Task entityTask) {
 
         Category category = categoryRepository.findById(request.getCategory().getId())
                 .orElseThrow(() -> new RuntimeException("Category not found with id: " + request.getCategory().getId()));
@@ -161,16 +256,4 @@ public class TaskService {
         return response;
     }
 
-    private void setDefaultStatus(Task task) {
-        if (task.getStatus() == null) {
-            Optional<Status> defaultStatusOpt = statusRepository.findByStatus(Status.StatusType.NON_COMPLETATO);
-            if (defaultStatusOpt.isPresent()) {
-                task.setStatus(defaultStatusOpt.get());
-            } else {
-                Status defaultStatus = new Status(Status.StatusType.NON_COMPLETATO);
-                statusRepository.save(defaultStatus);
-                task.setStatus(defaultStatus);
-            }
-        }
-    }
 }

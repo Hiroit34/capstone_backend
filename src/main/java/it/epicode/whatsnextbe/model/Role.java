@@ -28,4 +28,9 @@ public class Role {
     public Role(String typeRole) {
         this.typeRole = typeRole;
     }
+
+    @Override
+    public String toString() {
+        return typeRole;
+    }
 }

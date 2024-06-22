@@ -1,15 +1,19 @@
 package it.epicode.whatsnextbe.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
 @Table(name = "task")
+@ToString(exclude = {"status", "category", "users"} )
 public class Task extends BaseEntity{
 
     @Column(unique=true, length = 50)
@@ -27,9 +31,14 @@ public class Task extends BaseEntity{
 
     @ManyToMany(
             mappedBy = "tasks",
-            cascade = {CascadeType.PERSIST, CascadeType.MERGE}
+            cascade = {CascadeType.MERGE},
+            fetch = FetchType.LAZY
     )
-    private List<User> users;
+    @JsonManagedReference
+    private List<User> users = new ArrayList<>();
 
+    private boolean isShared;
+
+    private boolean isDeleted = false;
 
 }

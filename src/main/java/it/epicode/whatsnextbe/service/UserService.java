@@ -1,11 +1,15 @@
 package it.epicode.whatsnextbe.service;
 
 import it.epicode.whatsnextbe.dto.request.register.RegisterRequest;
-import it.epicode.whatsnextbe.dto.request.user.UserRequest;
 import it.epicode.whatsnextbe.dto.response.login.LoginResponse;
 import it.epicode.whatsnextbe.dto.response.register.RegisterResponse;
+import it.epicode.whatsnextbe.dto.response.task.TaskResponseTitleAndID;
 import it.epicode.whatsnextbe.dto.response.user.UserResponse;
+import it.epicode.whatsnextbe.dto.response.user.UserResponseWithTaskDTO;
+import it.epicode.whatsnextbe.email.EmailService;
+import it.epicode.whatsnextbe.mapper.UserMapper;
 import it.epicode.whatsnextbe.model.Role;
+import it.epicode.whatsnextbe.model.Task;
 import it.epicode.whatsnextbe.model.User;
 import it.epicode.whatsnextbe.repository.RoleRepository;
 import it.epicode.whatsnextbe.repository.UserRepository;
@@ -13,6 +17,7 @@ import it.epicode.whatsnextbe.security.InvalidLoginException;
 import it.epicode.whatsnextbe.security.JwtUtils;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -20,6 +25,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -27,25 +33,29 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class UserService {
-    // GET, GET BY ID, POST, PUT, DELETE
 
     private final PasswordEncoder encoder;
     private final AuthenticationManager auth;
     private final JwtUtils jwt;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final EmailService emailService;
+    private final UserMapper userMapper;
 
-    // GET ALL
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    @Transactional
+    public List<UserResponseWithTaskDTO> getAllUsers() {
+        List<User> users = userRepository.findAll();
+
+
+        return users.stream().map(userMapper::convertToUserResponseDTO).collect(Collectors.toList());
     }
 
-    // GET BY ID
     public UserResponse getUserById(Long id) {
         if (!userRepository.existsById(id)) {
             throw new EntityNotFoundException("User with id " + id + " not found");
@@ -56,7 +66,6 @@ public class UserService {
         return response;
     }
 
-    // POST - USER
     public RegisterResponse registerUser(RegisterRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new EntityExistsException("User with username " + request.getUsername() + " already exists");
@@ -76,10 +85,10 @@ public class UserService {
         RegisterResponse response = new RegisterResponse();
         BeanUtils.copyProperties(savedUser, response);
         response.setRoles(List.of(role));
+        emailService.sendWelcomeEmail(user.getEmail());
         return response;
     }
 
-    // DELETE
     public String deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
             throw new EntityNotFoundException("User with id " + id + " not found");
@@ -88,7 +97,6 @@ public class UserService {
         return "User with id " + id + " deleted";
     }
 
-    //POST - ADMIN
     public RegisterResponse registerAdmin(RegisterRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new EntityExistsException("Utente gia' esistente");
@@ -157,10 +165,10 @@ public class UserService {
         return userRepository.findByUsername(username);
     }
 
-    public boolean isAdmin(Long userId) {
-        Optional<User> user = userRepository.findById(userId);
-        return user.map(u -> u.getRoles().stream()
-                .anyMatch(role -> role.getTypeRole().equals(Role.ROLES_ADMIN))).orElse(false);
+    public User getCurrentUser() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
     }
 
     public UserResponse updateUser(Long id, RegisterRequest updateRequest) {

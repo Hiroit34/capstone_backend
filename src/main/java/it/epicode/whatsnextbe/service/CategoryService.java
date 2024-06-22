@@ -5,26 +5,22 @@ import it.epicode.whatsnextbe.dto.response.category.CategoryResponse;
 import it.epicode.whatsnextbe.model.Category;
 import it.epicode.whatsnextbe.repository.CategoryRepository;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class CategoryService {
 
-    //serve GET, GET BY ID, POST, PUT, DELETE
+    private final CategoryRepository categoryRepository;
 
-    @Autowired
-    private CategoryRepository categoryRepository;
-
-    //GET ALL
     public List<Category> getAllCategories() {
         return categoryRepository.findAll();
     }
 
-    //GET BY ID
     public CategoryResponse getCategoryById(Long id) {
         if (!categoryRepository.existsById(id)) {
             throw new EntityNotFoundException("Category with id " + id + " not found");
@@ -35,7 +31,6 @@ public class CategoryService {
         return response;
     }
 
-    //POST
     public CategoryResponse createCategory(CategoryRequest request) {
         Category entity = new Category();
         BeanUtils.copyProperties(request, entity);
@@ -45,7 +40,6 @@ public class CategoryService {
         return response;
     }
 
-    //PUT
     public CategoryResponse modifyCategory(Long id, CategoryRequest request) {
         if (!categoryRepository.existsById(id)) {
             throw new EntityNotFoundException("Category with id " + id + " not found");
@@ -58,7 +52,6 @@ public class CategoryService {
         return response;
     }
 
-    //DELETE
     public String deleteCategory(Long id) {
         if (!categoryRepository.existsById(id)) {
             throw new EntityNotFoundException("Category with id " + id + " not found");
