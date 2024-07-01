@@ -1,8 +1,6 @@
 package it.epicode.whatsnextbe.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -10,7 +8,6 @@ import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -41,29 +38,19 @@ public class User extends BaseEntity {
     )
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private List<Role> roles;
+    private List<Role> roles = new ArrayList<>();
 
     @ManyToMany(
+            mappedBy = "users",
             cascade = {CascadeType.PERSIST, CascadeType.MERGE}
-    )
-    @JoinTable(
-            name = "user_task",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "task_id")
     )
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private List<Task> tasks;
-
-    public User() {
-        this.roles = new ArrayList<>();
-        this.tasks = new ArrayList<>();
-    }
+    private List<Task> tasks = new ArrayList<>();
 
     @JsonIgnore
     public boolean isAdmin() {
         return roles.stream().anyMatch(role -> Role.ROLES_ADMIN.equals(role.getTypeRole()));
     }
-
 }
 

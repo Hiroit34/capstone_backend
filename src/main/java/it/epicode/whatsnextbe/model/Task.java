@@ -1,10 +1,10 @@
 package it.epicode.whatsnextbe.model;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import org.hibernate.action.internal.OrphanRemovalAction;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,12 +13,13 @@ import java.util.List;
 @Entity
 @Data
 @Table(name = "task")
-@ToString(exclude = {"status", "category", "users"} )
-public class Task extends BaseEntity{
+@ToString(exclude = {"status", "category", "users"})
+public class Task extends BaseEntity {
 
-    @Column(unique=true, length = 50)
+    @Column(unique = true, length = 50)
     private String title;
-    @Column(length = 50)
+
+    @Column
     private String description;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -30,15 +31,16 @@ public class Task extends BaseEntity{
     private Category category;
 
     @ManyToMany(
-            mappedBy = "tasks",
-            cascade = {CascadeType.MERGE},
-            fetch = FetchType.LAZY
+            fetch = FetchType.EAGER
     )
-    @JsonManagedReference
+    @JoinTable(
+            name = "user_task",
+            joinColumns = @JoinColumn(name = "task_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
     private List<User> users = new ArrayList<>();
 
     private boolean isShared;
 
     private boolean isDeleted = false;
-
 }

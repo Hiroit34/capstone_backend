@@ -1,4 +1,4 @@
-package it.epicode.whatsnextbe.service;
+package it.epicode.whatsnextbe.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
