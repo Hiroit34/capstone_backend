@@ -80,7 +80,6 @@ public class TaskService {
             return dto;
         }).collect(Collectors.toList());
     }
-
     private Status getDefaultStatus() {
         return statusRepository.findByStatus(Status.StatusType.NON_COMPLETATO)
                 .orElseGet(() -> {
