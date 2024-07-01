@@ -64,7 +64,7 @@ public class ApplicationSecurityConfig {
                                         .requestMatchers(HttpMethod.PATCH, "/api/user/{id}").authenticated() //SOLO UN UTENTE AUTENTICATO PUO MODIFICARE I SUOI DATI
                                         .requestMatchers(HttpMethod.DELETE, "/api/user/{id}").authenticated() //TUTTE LE DELETE POSSONO ESSERE FATTE SOLO DALL'ADMIN
                                         .requestMatchers(HttpMethod.GET, "/api/task/{id}").authenticated() //TUTTE LE DELETE POSSONO ESSERE FATTE SOLO DALL'ADMIN
-                                        .requestMatchers(HttpMethod.GET, "/api/task").authenticated() //ENDPOINT PER OTTENERE TUTTE LE TASK AI SOLI ADMIN
+                                        .requestMatchers(HttpMethod.GET, "/api/task").permitAll() //ENDPOINT PER OTTENERE TUTTE LE TASK AI SOLI ADMIN
                                         .requestMatchers(HttpMethod.PATCH, "/api/task/{id}/status").permitAll()
                                         .requestMatchers(HttpMethod.DELETE, "/api/task/{id}/delete").authenticated()
                                         .requestMatchers(HttpMethod.PUT, "/api/task/{id}").authenticated()

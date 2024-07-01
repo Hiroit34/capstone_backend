@@ -49,8 +49,9 @@ public class TaskController {
 
     // PUT
     @PutMapping("/{id}")
-    public ResponseEntity<TaskResponse> modifyTask(@PathVariable Long id, @RequestBody TaskRequestUpdate request) {
-        TaskResponse updatedTask = taskService.updateTask(id, request);
+    public ResponseEntity<TaskResponseLight> modifyTask(@PathVariable Long id, @RequestBody TaskRequestUpdate request) {
+        System.out.println("Received task update request: " + request);
+        TaskResponseLight updatedTask = taskService.updateTask(id, request);
         return ResponseEntity.ok(updatedTask);
     }
 
@@ -64,10 +65,15 @@ public class TaskController {
     @DeleteMapping("/{id}/delete")
     public ResponseEntity<String> deleteTask(@PathVariable Long id) {
         String responseMessage =taskService.deleteTask(id);
-        if (responseMessage.equals("Task deleted successfully")) {
-            return ResponseEntity.ok(responseMessage);
-        } else {
-            return ResponseEntity.status(403).body(responseMessage); // 403 Forbidden for permission issues
+        try {
+            if (responseMessage.equals("Task deleted successfully")) {
+                return ResponseEntity.ok(responseMessage);
+            } else {
+                return ResponseEntity.status(403).body(responseMessage); // 403 Forbidden for permission issues
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 

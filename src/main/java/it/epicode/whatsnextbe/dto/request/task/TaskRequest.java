@@ -21,11 +21,11 @@ public class TaskRequest {
     @Size(max = 50, message = "Il titolo deve avere un massimo di 50 caratteri")
     private String title;
 
-    @Size(max = 50, message = "La descrizione deve avere un massimo di 50 caratteri")
+    @Size(max = 255, message = "La descrizione deve avere un massimo di 255 caratteri")
     private String description;
 
     @NotNull(message = "Lo status è obbligatorio")
-    private Status status;
+    private Status.StatusType status;
 
     @NotNull(message = "La categoria è obbligatoria")
     private Category category;
