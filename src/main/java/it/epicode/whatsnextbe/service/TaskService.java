@@ -71,7 +71,7 @@ public class TaskService {
             }
             TaskResponseLight dto = new TaskResponseLight();
             dto.setId(task.getId());
-            dto.setName(task.getTitle());
+            dto.setTitle(task.getTitle());
             dto.setDescription(task.getDescription());
             dto.setStatus(task.getStatus().getStatus().toString());
             dto.setCategory(task.getCategory());
@@ -303,7 +303,7 @@ public class TaskService {
     private TaskResponseLight getTaskCompleteResponse(Task task) {
         TaskResponseLight response = new TaskResponseLight();
         response.setId(task.getId());
-        response.setName(task.getTitle());
+        response.setTitle(task.getTitle());
         response.setDescription(task.getDescription());
         response.setStatus(task.getStatus().getStatus().toString());
         response.setCategory(task.getCategory());

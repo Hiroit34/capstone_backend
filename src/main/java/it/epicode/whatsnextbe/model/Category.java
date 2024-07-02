@@ -20,8 +20,8 @@ public class Category extends BaseEntity{
 
     @OneToMany (
             mappedBy = "category",
-            cascade = CascadeType.PERSIST,
-            fetch = FetchType.EAGER
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
     )
     @JsonIgnore
     private List<Task> tasks;

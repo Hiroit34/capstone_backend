@@ -60,15 +60,25 @@ public class ApplicationSecurityConfig {
                                         .requestMatchers("/api/user/registerAdmin").permitAll() // DA CANCELLARE DOPO AVER CREATO L'ADMIN
                                         .requestMatchers("/api/user/register").permitAll()
 
+                                        //USER API
                                         .requestMatchers(HttpMethod.GET, "/api/user").hasAuthority("ADMIN") //ENDPOINT DI REGISTRAZIONE APERTO AI SOLI ADMIN
                                         .requestMatchers(HttpMethod.PATCH, "/api/user/{id}").authenticated() //SOLO UN UTENTE AUTENTICATO PUO MODIFICARE I SUOI DATI
                                         .requestMatchers(HttpMethod.DELETE, "/api/user/{id}").authenticated() //TUTTE LE DELETE POSSONO ESSERE FATTE SOLO DALL'ADMIN
+
+                                        //TASK API
                                         .requestMatchers(HttpMethod.GET, "/api/task/{id}").authenticated() //TUTTE LE DELETE POSSONO ESSERE FATTE SOLO DALL'ADMIN
                                         .requestMatchers(HttpMethod.GET, "/api/task").permitAll() //ENDPOINT PER OTTENERE TUTTE LE TASK AI SOLI ADMIN
                                         .requestMatchers(HttpMethod.PATCH, "/api/task/{id}/status").permitAll()
                                         .requestMatchers(HttpMethod.DELETE, "/api/task/{id}/delete").authenticated()
                                         .requestMatchers(HttpMethod.PUT, "/api/task/{id}").authenticated()
                                         .requestMatchers(HttpMethod.POST, "/api/task/create").authenticated() //TUTTE LE PUT POSSONO ESSERE FATTE SOLO DALL'ADMIN
+
+                                        //CATEGORY API
+                                        .requestMatchers(HttpMethod.POST, "/api/category").permitAll()
+                                        .requestMatchers(HttpMethod.DELETE, "/api/category/{id}").permitAll()
+                                        .requestMatchers(HttpMethod.PUT, "/api/category/{id}").permitAll()
+
+
                                         .requestMatchers(HttpMethod.GET, "/api/**").authenticated() //TUTTE GLI ENDPOINTS DI TIPO GET SONO RICHIAMABILI SOLO SE L'UTENTE E AUTENTICATO
                         //.requestMatchers("/**").authenticated() //TUTTO CIO CHE PUO ESSERE SFUGGITO RICHIEDE L'AUTENTICAZIONE (SERVE A GESTIRE EVENTUALI DIMENTICANZE)
                 )
