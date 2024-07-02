@@ -20,4 +20,6 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     @Transactional
     @Query(value = "DELETE FROM task WHERE id = ?1", nativeQuery = true)
     void deleteById(Long id);
+
+    List<Task> findByCategoryId(Long categoryId);
 }

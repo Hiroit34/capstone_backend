@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 public class TaskResponseLight {
     private Long id;
-    private String name;
+    private String title;
     private String description;
     private String status;
     private Category category;

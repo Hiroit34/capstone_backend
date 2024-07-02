@@ -1,6 +1,7 @@
 package it.epicode.whatsnextbe.runner;
 
 import it.epicode.whatsnextbe.dto.request.category.CategoryRequest;
+import it.epicode.whatsnextbe.dto.request.category.CreateCategoryRequest;
 import it.epicode.whatsnextbe.repository.CategoryRepository;
 import it.epicode.whatsnextbe.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,10 +27,10 @@ public class CategoryRunner implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
         if (categoryRepository.count() == 0) {
-            List<CategoryRequest> categories = Arrays.asList(
-                    new CategoryRequest("Sport"),
-                    new CategoryRequest("Casa"),
-                    new CategoryRequest("Studio")
+            List<CreateCategoryRequest> categories = Arrays.asList(
+                    new CreateCategoryRequest("Sport"),
+                    new CreateCategoryRequest("Casa"),
+                    new CreateCategoryRequest("Studio")
             );
             categories.forEach(category -> {
                 categoryService.createCategory(category);
