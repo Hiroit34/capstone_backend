@@ -6,6 +6,7 @@ import it.epicode.whatsnextbe.security.SecurityUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -23,9 +24,20 @@ public class AuthenticationSerivce {
 
     public Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        SecurityUserDetails userDetails = (SecurityUserDetails) authentication.getPrincipal();
-        System.out.println(authentication.getPrincipal());
-        return userDetails.getId();
+        if (authentication == null) {
+            throw new RuntimeException("No authentication object found in security context");
+        }
+
+        String username;
+        if (authentication.getPrincipal() instanceof UserDetails) {
+            username = ((UserDetails) authentication.getPrincipal()).getUsername();
+        } else {
+            username = authentication.getPrincipal().toString();
+        }
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+        return user.getId();
     }
 
 }

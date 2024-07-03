@@ -21,11 +21,11 @@ public class StatusRunner implements ApplicationRunner {
         } else {
             System.out.println("Status: " + Status.StatusType.COMPLETATO + " gia' caricato");
         }
-        if (!statusRepository.existsByStatus(Status.StatusType.NON_COMPLETATO)) {
-            statusRepository.save(new Status(Status.StatusType.NON_COMPLETATO));
-            System.out.println("Status: " + Status.StatusType.NON_COMPLETATO + "caricato con successo");
+        if (!statusRepository.existsByStatus(Status.StatusType.NON_ACCETTATO)) {
+            statusRepository.save(new Status(Status.StatusType.NON_ACCETTATO));
+            System.out.println("Status: " + Status.StatusType.NON_ACCETTATO + "caricato con successo");
         } else {
-            System.out.println("Status: " + Status.StatusType.NON_COMPLETATO + " gia' caricato");
+            System.out.println("Status: " + Status.StatusType.NON_ACCETTATO + " gia' caricato");
         }
         if (!statusRepository.existsByStatus(Status.StatusType.IN_CORSO)) {
             statusRepository.save(new Status(Status.StatusType.IN_CORSO));
