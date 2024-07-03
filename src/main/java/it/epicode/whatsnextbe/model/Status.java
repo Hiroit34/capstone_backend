@@ -44,7 +44,7 @@ public class Status extends BaseEntity{
 
     public enum StatusType {
         COMPLETATO,
-        NON_COMPLETATO,
+        NON_ACCETTATO,
         IN_CORSO;
 
         @JsonCreator

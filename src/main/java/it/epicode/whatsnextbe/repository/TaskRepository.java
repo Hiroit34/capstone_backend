@@ -13,8 +13,8 @@ import java.util.Optional;
 
 public interface TaskRepository extends JpaRepository<Task, Long> {
 
-    @Query("SELECT t FROM Task t WHERE :userId MEMBER OF t.users OR t.isShared = true")
-    List<Task> findAllByUsersIdOrShared(@Param("userId") Optional<User> userId);
+    @Query("SELECT t FROM Task t WHERE :user MEMBER OF t.users OR (t.isShared = true AND :user MEMBER OF t.users)")
+    List<Task> findAllByUsersIdOrShared(@Param("user") User user);
 
     @Modifying
     @Transactional

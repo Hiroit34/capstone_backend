@@ -26,10 +26,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -50,6 +47,7 @@ public class TaskService {
 
         if (authentication == null) {
             System.out.println("Authentication object is null");
+            return Collections.emptyList();
         }
 
         boolean isAdmin = authentication.getAuthorities().stream()
@@ -60,8 +58,10 @@ public class TaskService {
             tasks = taskRepository.findAll();
         } else {
             Long userId = authenticationService.getCurrentUserId();
-            Optional<User> user = userRepository.findById(userId);
-
+            System.out.println("Current User ID: " + userId);
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found with id " + userId));
+            System.out.println("User retrieved: " + user.getUsername());
             tasks = taskRepository.findAllByUsersIdOrShared(user);
         }
 
@@ -76,14 +76,14 @@ public class TaskService {
             dto.setStatus(task.getStatus().getStatus().toString());
             dto.setCategory(task.getCategory());
             dto.setUsers(task.getUsers().stream().map(UserMapper::convertToUserResponseLight).collect(Collectors.toList()));
-            System.out.println(task.getUsers());
             return dto;
         }).collect(Collectors.toList());
     }
+
     private Status getDefaultStatus() {
-        return statusRepository.findByStatus(Status.StatusType.NON_COMPLETATO)
+        return statusRepository.findByStatus(Status.StatusType.NON_ACCETTATO)
                 .orElseGet(() -> {
-                    Status newStatus = new Status(Status.StatusType.NON_COMPLETATO);
+                    Status newStatus = new Status(Status.StatusType.NON_ACCETTATO);
                     return statusRepository.save(newStatus);
                 });
     }
