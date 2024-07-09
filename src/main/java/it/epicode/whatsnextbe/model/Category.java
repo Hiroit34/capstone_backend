@@ -18,6 +18,9 @@ public class Category extends BaseEntity{
     @Column(unique=true, nullable=false, length=50)
     private String categoryType;
 
+    @Column(unique=true, nullable=false, length=500)
+    private String description;
+
     @OneToMany (
             mappedBy = "category",
             cascade = CascadeType.ALL,

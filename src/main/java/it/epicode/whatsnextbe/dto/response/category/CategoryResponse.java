@@ -6,4 +6,5 @@ import lombok.Data;
 @Data
 public class CategoryResponse {
     private String categoryType;
+    private String description;
 }
