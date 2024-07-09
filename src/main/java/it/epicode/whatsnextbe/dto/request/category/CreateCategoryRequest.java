@@ -13,4 +13,7 @@ public class CreateCategoryRequest {
     @NotEmpty(message = "La tipo di categoria non puo essere vuoto")
     private String categoryType;
 
+    @NotEmpty(message = "La tipo di categoria non puo essere vuoto")
+    private String description;
+
 }

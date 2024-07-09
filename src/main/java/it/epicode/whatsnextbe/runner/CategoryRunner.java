@@ -28,9 +28,9 @@ public class CategoryRunner implements ApplicationRunner {
     public void run(ApplicationArguments args) throws Exception {
         if (categoryRepository.count() == 0) {
             List<CreateCategoryRequest> categories = Arrays.asList(
-                    new CreateCategoryRequest("Sport"),
-                    new CreateCategoryRequest("Casa"),
-                    new CreateCategoryRequest("Studio")
+                    new CreateCategoryRequest("Progetto 3", "Activities related to sports"),
+                    new CreateCategoryRequest("Progetto 4", "Home-related activities"),
+                    new CreateCategoryRequest("Progetto 5", "Study and educational activities")
             );
             categories.forEach(category -> {
                 categoryService.createCategory(category);

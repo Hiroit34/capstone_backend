@@ -6,7 +6,6 @@ import it.epicode.whatsnextbe.dto.request.task.TaskRequestUpdate;
 import it.epicode.whatsnextbe.dto.response.task.TaskResponse;
 import it.epicode.whatsnextbe.dto.response.task.TaskResponseLight;
 import it.epicode.whatsnextbe.service.TaskService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
