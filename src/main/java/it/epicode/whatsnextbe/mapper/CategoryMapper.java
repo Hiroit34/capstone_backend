@@ -18,7 +18,8 @@ public class CategoryMapper {
         CategoryWithTaskResponse response = new CategoryWithTaskResponse();
         response.setId(category.getId());
         response.setCategoryType(category.getCategoryType());
-        response.setTasks(tasks);
+        response.setDescription(category.getDescription());
+        response.setTask(tasks);
         return response;
     }
 }
